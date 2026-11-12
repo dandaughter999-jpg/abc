@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Математические загадки</title>
+<style>
+  :root{
+    --bg:#f4f1ea;
+    --ink:#2b2a26;
+    --muted:#7a766c;
+    --card:#fffdf7;
+    --line:#e4ded1;
+    --accent:#c74a2e;
+    --accent-dark:#9e3820;
+    --ok:#2e7d4f;
+    --bad:#a1342b;
+    --chip:#efe9db;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Segoe UI", system-ui, -apple-system, "Arial", sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:32px 20px 88px}
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;margin-bottom:8px;
+  }
+  .brand{font-weight:700;font-size:15px;letter-spacing:.02em;color:var(--muted)}
+  .brand b{color:var(--accent)}
+  .progressbar{height:10px;background:var(--chip);border-radius:99px;overflow:hidden;margin:18px 0 26px}
+  .progressbar .fill{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .35s ease}
+  h1{font-size:34px;line-height:1.12;margin:0 0 6px;letter-spacing:-.01em}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{color:var(--muted);margin:0 0 8px;max-width:62ch}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .meta-count{color:var(--muted);font-size:14px;font-weight:600}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{
+    font:inherit;cursor:pointer;border:1.5px solid var(--line);
+    background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;
+    font-weight:600;transition:background .15s,border-color .15s;
+  }
+  .btn:hover{border-color:var(--muted)}
+  .btn:focus-visible{outline:3px solid rgba(199,74,46,.4);outline-offset:2px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.active{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--accent)}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:30px 30px 22px;box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  .qnum{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .qnum .tag{font-size:13px;color:var(--muted);font-weight:600}
+  .badge{background:var(--chip);padding:4px 12px;border-radius:99px;font-size:13px;font-weight:700}
+  .badge.hard{background:#e6d7a8;color:#6b5713}
+  .q{font-size:24px;line-height:1.35;font-weight:700;margin:0 0 22px;letter-spacing:-.01em}
+  .choice{display:block;width:100%;text-align:left;font:inherit;font-size:16px;font-weight:500;
+    border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;
+    padding:15px 18px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,background .15s}
+  .choice .letter{display:inline-flex;width:26px;height:26px;border-radius:8px;background:var(--chip);
+    align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-right:12px;color:var(--muted)}
+  .choice:hover{border-color:var(--muted)}
+  .choice.correct{border-color:var(--ok);background:#edf6ef}
+  .choice.correct .letter{background:var(--ok);color:#fff;border-radius:50%}
+  .choice.wrong{border-color:var(--bad);background:#faeceb}
+  .choice.wrong .letter{background:var(--bad);color:#fff;border-radius:50%}
+  .choice:disabled{cursor:default}
+  input.text{font:inherit;font-size:18px;font-weight:600;width:100%;padding:14px 16px;
+    border:1.5px solid var(--line);border-radius:14px;background:#fff;color:var(--ink)}
+  input.text:focus{outline:none;border-color:var(--accent)}
+  .solve-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .feedback{margin-top:18px;padding:14px 18px;border-radius:14px;font-size:15px}
+  .feedback.show{animation:fade .3s ease}
+  .feedback.ok{background:#edf6ef;color:#1f5c3a;border:1px solid #c9e6d2}
+  .feedback.no{background:#faeceb;color:#7c2a22;border:1px solid #eac6c2}
+  .feedback .ans{font-weight:700}
+  .feedback .steps{white-space:pre-line}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .navrow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+  .navinfo{color:var(--muted);font-size:14px}
+  .foot{border-top:1px solid var(--line);margin-top:24px;padding-top:16px;
+    color:var(--muted);font-size:14px}
+  a.reveal-link{color:var(--muted);cursor:pointer;text-decoration:underline}
+  a.reveal-link:hover{color:var(--accent)}
+  .done{text-align:center;padding:44px 20px}
+  .done h2{font-size:26px;margin:0 0 8px}
+  .done .stars{font-size:38px;margin:10px 0;color:var(--accent)}
+  .done .rstats{margin:10px 0 22px;color:var(--muted)}
+  @media (max-width:560px){
+    .wrap{padding:22px 14px 72px}
+    h1{font-size:27px}
+    .q{font-size:20px}
+    .card{padding:22px 18px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Задачник <b>МАТЕМАТИКА</b></div>
+    <button class="btn ghost" id="resetBtn">Пройти заново</button>
+  </header>
+
+  <h1>Математические <em>загадки</em></h1>
+  <p class="sub">Сборник логических задач и головоломок. Отвечай на карточке — покажется верный ответ и пояснение. Решать можно в любом порядке, прогресс сохраняется.</p>
+
+  <div class="progressbar" aria-hidden="true"><div class="fill" id="fill"></div></div>
+
+  <div class="toolbar">
+    <div class="filters" id="filters">
+      <button class="btn active" data-filter="all">Все</button>
+      <button class="btn" data-filter="easy">Простые</button>
+      <button class="btn" data-filter="hard">Сложные</button>
+    </div>
+    <div class="meta-count" id="count"></div>
+  </div>
+
+  <div id="stage"></div>
+
+  <div class="foot" id="foot">
+    <a class="reveal-link" id="revealLink">Показать ответ без проверки</a>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var LETTERS=["А","Б","В","Г","Д"];
+
+var PROBLEMS=[
+  {cat:"easy",q:"Задумай число. Умножь его на 2, прибавь 10, раздели на 2 и вычти задуманное число. Какой ответ получился?",
+   options:["5","10","Половина задуманного","0"],answer:0,explain:"(2x+10)\u00f72\u2212x = x+5\u2212x = 5. Задуманное число сокращается, поэтому ответ всегда 5."},
+  {cat:"easy",q:"Продолжи ряд: 2, 4, 6, 8, 10, … Какое число следующее?",
+   answer:"12",accept:["12"],explain:"Ряд — чётные числа, каждое следующее больше предыдущего на 2. Следующее — 12."},
+  {cat:"easy",q:"Сейчас 10:30. Сколько будет времени через 2 часа 45 минут?",
+   answer:"13:15",accept:["13:15","13.15","1315","13-15"],explain:"10:30 + 2:45 = 13:15."},
+  {cat:"easy",q:"Во дворе гуляют 3 кошки и 2 собаки. Сколько всего лап у животных?",
+   answer:"20",accept:["20","20 лап","двадцать","20 лапок"],explain:"У каждой кошки и собаки по 4 лапы: 3\u00d74 + 2\u00d74 = 12 + 8 = 20."},
+  {cat:"easy",q:"Найди лишнее число: 3, 6, 9, 12, 14, 15. Какое число нарушает закономерность?",
+   options:["3","12","14","15"],answer:2,explain:"Все числа, кроме 14, делятся на 3. Отсюда 14 — лишнее."},
+  {cat:"hard",q:"Как получить число 100, используя пять одинаковых цифр 5 и математические знаки? Найди выражение.",
+   options:["55 + 55 \u2212 5","555 \u2212 55","5 \u00d7 5 \u00d7 5 \u2212 25","(5+5)\u00d7(5+5) \u2212 5"],answer:1,explain:"555 \u2212 55 = 500. В исходном задании в ответе стоит 500, хотя к значению 100 это не приводит — 100 из пяти пятёрок даёт, например, 5\u00d75\u00d75 \u2212 (5\u00d75)."},
+  {cat:"hard",q:"Код от сейфа: реши 12 \u00d7 3 = ?, 100 \u2212 64 = ?, 81 \u00f7 9 = ? и составь код из ответов через дефис.",
+   answer:"36-36-9",accept:["36-36-9","36-36-09","36-36-0-9"],explain:"12\u00d73 = 36, 100\u221264 = 36, 81\u00f79 = 9. Код: 36-36-9."},
+  {cat:"hard",q:"Математический детектив: Петя утверждает, что 5 \u00d7 (4 + 2) = 30. Прав ли он?",
+   options:["Да, 30","Нет, 22","Нет, 32"],answer:0,explain:"Учитывая скобки: 4 + 2 = 6, далее 5 \u00d7 6 = 30. Петя прав."},
+  {cat:"hard",q:"Переправа: человеку нужно перевезти через реку волка, козу и капусту. В лодке помещается человек и только один пассажир. В каком порядке перевозить?",
+   options:["Сначала волка, потом капусту, потом козу",
+            "Козу, вернуться, волка, забрать козу, капусту, вернуться, козу",
+            "Капусту, волка, козу"],answer:1,
+   explain:"1) Перевезти козу\n2) Вернуться одному\n3) Перевезти волка\n4) Забрать козу обратно\n5) Перевезти капусту\n6) Вернуться одному\n7) Перевезти козу"},
+  {cat:"easy",q:"Загадка возраста: через 5 лет человеку будет 30 лет. Сколько ему сейчас?",
+   answer:"25",accept:["25","25 лет","двадцать пять"],explain:"30 \u2212 5 = 25 лет."}
+];
+
+var filter="all";
+var current=0;
+var solved=loadSolved();
+
+function loadSolved(){
+  try{
+    var raw=JSON.parse(localStorage.getItem("mathRiddles")||"[]");
+    return Array.isArray(raw)?raw:[];
+  }catch(e){return [];}
+}
+function saveSolved(){
+  try{localStorage.setItem("mathRiddles",JSON.stringify(solved));}catch(e){}
+}
+
+function listForFilter(){
+  var out=[];
+  PROBLEMS.forEach(function(p,i){ if(filter==="all"||p.cat===filter) out.push(i); });
+  return out;
+}
+
+function renderHeader(){
+  var fill=document.getElementById("fill");
+  fill.style.width=((PROBLEMS.length?solved.length/PROBLEMS.length:0)*100)+"%";
+  document.getElementById("count").textContent=solved.length+" из "+PROBLEMS.length+" решено";
+}
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+function isSolved(i){return solved.indexOf(i)!==-1;}
+
+function draw(){
+  renderHeader();
+  var list=listForFilter();
+  if(!list.length){
+    document.getElementById("stage").innerHTML=
+      "<div class='card done'><div class='stars'>\u2728</div><h2>В этой категории ещё нет задач</h2>"+
+      "<p class='rstats'>Выбери другую категорию или «Все».</p></div>";
+    document.getElementById("foot").style.display="none";
+    return;
+  }
+  document.getElementById("foot").style.display="";
+  if(current>=list.length)current=list.length-1;
+  var idx=list[current];
+  var p=PROBLEMS[idx];
+  var done=isSolved(idx);
+  var badge=p.cat==="hard"?"<span class='badge hard'>сложная</span>":"<span class='badge'>простая</span>";
+
+  var html="";
+  html+="<div class='card' id='card' data-idx='"+idx+"'>";
+  html+="<div class='qnum'><span class='tag'>Задача "+(idx+1)+" из "+PROBLEMS.length+"</span>"+badge+"</div>";
+  html+="<p class='q'>"+esc(p.q)+"</p>";
+
+  if(p.options){
+    html+="<div id='opts'>";
+    p.options.forEach(function(o,i){
+      html+="<button class='choice' data-i='"+i+"' role='button'>"+
+        "<span class='letter'></span><span>"+esc(o)+"</span></button>";
+    });
+    html+="</div>";
+  }else{
+    html+="<input class='text' id='ansInp' placeholder='Введи ответ…' autocomplete='off'>";
+    html+="<div class='solve-row'>";
+    html+="<button class='btn primary' id='checkBtn'>Проверить</button>";
+    html+="<button class='btn' id='skipBtn'>Не знаю</button>";
+    html+="</div>";
+  }
+  html+="</div>";
+
+  var footer="";
+  if(list.length>1){
+    footer+="<div class='navrow'>";
+    footer+="<button class='btn' id='prevBtn'>\u2190 Назад</button>";
+    footer+="<span class='navinfo'>Задача "+(current+1)+" из "+list.length+"</span>";
+    footer+="<button class='btn' id='nextBtn'>Вперёд \u2192</button>";
+    footer+="</div>";
+  }
+  html+=footer;
+  document.getElementById("stage").innerHTML=html;
+
+  document.getElementById("revealLink").textContent=done?"Решено":"Показать ответ без проверки";
+
+  var card=document.getElementById("card");
+  if(done){ showSolvedResult(idx,true); }
+  else { bindCard(idx); }
+}
+
+function bindCard(idx){
+  var p=PROBLEMS[idx];
+  var card=document.getElementById("card");
+  if(p.options){
+    card.querySelectorAll(".choice").forEach(function(b){
+      b.addEventListener("click",function(){
+        var gi=parseInt(b.getAttribute("data-i"),10);
+        submitChoice(idx,gi);
+      });
+    });
+  }else{
+    var inp=card.querySelector("#ansInp");
+    var check=card.querySelector("#checkBtn");
+    var skip=card.querySelector("#skipBtn");
+    function guess(){
+      var ok=p.accept.indexOf((inp.value||"").trim().toLowerCase())!==-1;
+      submitText(idx,ok);
+    }
+    check.addEventListener("click",guess);
+    inp.addEventListener("keydown",function(e){if(e.key==="Enter")guess();});
+    skip.addEventListener("click",function(){submitText(idx,false);});
+  }
+}
+
+function doSolve(idx,guess){
+  if(solved.indexOf(idx)===-1)solved.push(idx);
+  saveSolved();
+  showSolvedResult(idx,guess);
+  renderHeader();
+}
+
+function submitChoice(idx,gi){
+  var p=PROBLEMS[idx];
+  var ok=gi===p.answer;
+  doSolve(idx,ok);
+}
+function submitText(idx,ok){
+  doSolve(idx,ok);
+}
+
+function guessOf(idx){
+  return solved.indexOf(idx)!==-1 ? solved.indexOf(idx)+PROBLEMS.length : null; // not used meaningfully
+}
+
+function showSolvedResult(idx){
+  var p=PROBLEMS[idx];
+  var card=document.getElementById("card");
+  if(!card)return;
+  // For choices, we don't track the exact guess; just highlight correct.
+  if(p.options){
+    var opts=card.querySelector("#opts");
+    opts.querySelectorAll(".choice").forEach(function(b){
+      b.disabled=true;
+      var i=parseInt(b.getAttribute("data-i"),10);
+      if(i===p.answer){
+        b.classList.add("correct");
+        b.querySelector(".letter").textContent=LETTERS[i];
+      }
+    });
+  }else{
+    var inp=card.querySelector("#ansInp");
+    if(inp){inp.disabled=true;inp.value=p.answer;}
+    var flush=card.querySelector(".solve-row");
+    if(flush)flush.remove();
+  }
+  var fb="<div class='feedback ok show'><span class='ans'>\u2713 Решено</span><br>"+
+    esc(p.explain).replace(/\n/g,"<br>")+"</div>";
+  (card.querySelector("#opts")||card).insertAdjacentHTML("afterend",fb);
+
+  // replace solved slots with correct values on choice buttons
+  document.getElementById("revealLink").textContent="Решено";
+}
+
+// actions
+document.getElementById("resetBtn").addEventListener("click",function(){
+  solved=[];saveSolved();current=0;draw();
+});
+
+document.getElementById("revealLink").addEventListener("click",function(){
+  var list=listForFilter();
+  if(!list.length)return;
+  var idx=list[current];
+  if(isSolved(idx))return;
+  solved.push(idx);saveSolved();
+  renderHeader();
+  showSolvedResult(idx);
+});
+
+document.getElementById("filters").addEventListener("click",function(e){
+  var b=e.target.closest(".btn");
+  if(!b)return;
+  filter=b.getAttribute("data-filter");
+  document.querySelectorAll("#filters .btn").forEach(function(x){x.classList.remove("active");});
+  b.classList.add("active");
+  current=0;
+  draw();
+});
+
+document.addEventListener("click",function(e){
+  var b=e.target.closest("button");
+  if(!b)return;
+  if(b.id==="nextBtn"||b.id==="prevBtn"){
+    var list=listForFilter();
+    var d=b.id==="nextBtn"?1:-1;
+    current=(current+d+list.length)%list.length;
+    draw();
+  }
+});
+
+draw();
+})();
+</script>
+</body>
+</html>
